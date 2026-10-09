@@ -181,12 +181,62 @@ table.heat{border-collapse:separate;border-spacing:2px;font-size:12px;min-width:
 .heat td small{display:block;font-size:10px;font-weight:500;opacity:.85}
 .heat.u-n td,.heat.u-both td{min-width:40px}
 footer{color:var(--muted);font-size:12px;padding-block:24px 36px}
+/* PDF download controls */
+.pdfbtn{font:inherit;font-size:12.5px;font-weight:700;display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--fg);cursor:pointer;white-space:nowrap}
+.pdfbtn:hover{border-color:var(--phul)}
+.pdfbtn:focus-visible{outline:2px solid var(--phul);outline-offset:2px}
+.pdfbtn svg{width:14px;height:14px;flex:none}
+.pdfbtn.primary{background:var(--tab-on);color:var(--tab-on-fg);border-color:var(--tab-on)}
+.pdfbtn[disabled]{opacity:.55;cursor:progress}
+.sumrow{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px 24px}
+.fullpdf{display:flex;flex-direction:column;align-items:flex-end;gap:6px;text-align:right}
+.fullpdf span{font-size:12px;color:var(--muted);max-width:32ch}
+@media (max-width:560px){.fullpdf{align-items:flex-start;text-align:left}}
+.sechead{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 14px;margin-bottom:4px}
+.sechead h2,.sechead .h3{margin:0}
+.sechead.mt{margin-top:26px}
+.pdftoast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:8px;font-weight:600;font-size:13px;z-index:20;box-shadow:0 6px 20px rgba(0,0,0,.25);max-width:calc(100vw - 32px)}
+/* off-screen stage the PDF pages are drawn from: always light, always desktop layout */
+.pdfstage{position:fixed;left:-40000px;top:0;
+  --bg:#FFFFFF; --surface:#FFFFFF; --fg:#0B1F3A; --muted:#556780; --line:#DDE3EE; --track:#EEF1F7;
+  --heat-base:0,49,107; --good:#178A3E; --bad:#C21F1F; --tab-on:#00316B; --tab-on-fg:#FFD400;
+  background:#FFFFFF;color:var(--fg);font-family:var(--font);font-size:14px;line-height:1.45;color-scheme:light}
+.pdfblk{background:#FFFFFF;padding:4px 0 8px}
+.pdfstage .cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+.pdfstage .ovg{grid-template-columns:72px 1fr}
+.pdfstage .ovg .g small{display:block;margin-left:0}
+.pdfstage .ovr{grid-template-columns:96px 1fr}
+.pdfstage .rkhead,.pdfstage .rkrow{grid-template-columns:26px 130px minmax(0,1fr) 54px;gap:10px}
+.pdfstage .card{break-inside:avoid}
+.pdfstage .seg + .seg{box-shadow:none;border-left:1px solid #FFFFFF}
+[data-unit="both"] .pdfstage .seg .nv::before{content:"\00a0·\00a0"}
+.pdfstage .heat tbody th{position:static}
+.pdfstage .heat{line-height:1.15}
+.pdfstage .heat th,.pdfstage .heat td{padding:3px 2px}
+.pdfstage .heat td small{font-size:9.5px}
+.pdfstage .lens{padding-top:8px}
+.pdfhead.compact{padding:14px 22px 12px}
+.pdfhead.compact h1{font-size:22px;margin:.2em 0 .15em}
+.pdfhead.compact .legend{margin-top:8px}
+.sym img.symimg{width:11px;height:11px;display:block}
+.seg .sym img.symimg{width:9px;height:9px}
+.bar.sm .seg .sym img.symimg{width:8px;height:8px}
+.pdfov .ovg:last-child{border-bottom:1px solid var(--line)}
+.pdfhead{background:#00316B;color:#FFFFFF;border-bottom:6px solid #FFD400;padding:22px 26px 18px;border-radius:10px}
+.pdfhead .ph-row{display:flex;justify-content:space-between;gap:24px;align-items:flex-start}
+.pdfhead .ph-eye{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#FFD400;font-weight:700}
+.pdfhead h1{font-size:28px;font-weight:800;line-height:1.15;margin:.3em 0 .25em}
+.pdfhead p{margin:0;opacity:.85;max-width:62ch}
+.pdfhead .ph-meta{font-size:12px;opacity:.85;text-align:right;white-space:nowrap;padding-top:2px}
+.pdfhead .legend{margin-top:14px}
+.pdfh2{font-size:20px;font-weight:800;margin:10px 0 2px}
+.pdfstage .sub{margin-bottom:8px}
 </style>
 
 <header class="mast">
   <div class="wrap">
-    <div class="eyebrow">SANKALP Programme · Sundargarh</div>
-    <h1>Student Learning Level Grade 1 to Grade 8</h1>
+    <div class="eyebrow">SANKALP Programme · Monthly learning-level tracking · Sundargarh</div>
+    <h1>Where Sundargarh's learners stand, Grade 1 to Grade 8</h1>
     <p>Students in each learning band, for every subject in every grade, district-wide and across all 17 blocks. Built from the pivot tables in the export of 6 October 2026.</p>
     <div class="legend" aria-label="Learning bands" id="legend"></div>
   </div>
@@ -205,18 +255,19 @@ footer{color:var(--muted);font-size:12px;padding-block:24px 36px}
 </div>
 
 <main class="wrap">
-  <section aria-label="District summary">
+  <section aria-label="District summary" class="sumrow">
     <div class="kpis" id="kpis"></div>
+    <div class="fullpdf"><button type="button" class="pdfbtn primary" data-pdf="full"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5v8.2m0 0L4.8 6.5M8 9.7l3.2-3.2M2.5 11v2.5h11V11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Download full report (PDF)</button><span>All sections, all grades, every block, as a printable A4 document.</span></div>
   </section>
 
   <section aria-labelledby="ovh">
-    <h2 id="ovh">Every subject, every grade</h2>
+    <div class="sechead"><h2 id="ovh">Every subject, every grade</h2><button type="button" class="pdfbtn" data-pdf="overview"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5v8.2m0 0L4.8 6.5M8 9.7l3.2-3.2M2.5 11v2.5h11V11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Download PDF</button></div>
     <p class="sub">District-wide split across Phala, Phula and Kadha. Select a row to open that subject's block-level view.</p>
     <div class="ov" id="overview"></div>
   </section>
 
   <section aria-labelledby="gh" id="grade-section">
-    <h2 id="gh">Subject cards by grade</h2>
+    <div class="sechead"><h2 id="gh">Subject cards by grade</h2><button type="button" class="pdfbtn" data-pdf="cards"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5v8.2m0 0L4.8 6.5M8 9.7l3.2-3.2M2.5 11v2.5h11V11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span id="pdf-cards-lab">Download PDF</span></button></div>
     <p class="sub">Each card shows one subject in one grade: the three bands district-wide, then every block.</p>
     <div class="tabs" role="tablist" id="tabs"></div>
     <div class="toolbar">Sort blocks by
@@ -231,7 +282,7 @@ footer{color:var(--muted);font-size:12px;padding-block:24px 36px}
   </section>
 
   <section aria-labelledby="bh">
-    <h2 id="bh">Block-wise comparison</h2>
+    <div class="sechead"><h2 id="bh">Block-wise comparison</h2><button type="button" class="pdfbtn" data-pdf="ranking"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5v8.2m0 0L4.8 6.5M8 9.7l3.2-3.2M2.5 11v2.5h11V11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Download ranking (PDF)</button></div>
     <p class="sub">All 17 blocks ranked side by side. Choose a grade and subject, or leave both on "All" to pool every assessment a block has run.</p>
     <div class="panel">
       <div class="toolbar">
@@ -250,7 +301,7 @@ footer{color:var(--muted);font-size:12px;padding-block:24px 36px}
       <div id="ranking"></div>
     </div>
 
-    <h3 class="h3">Head-to-head</h3>
+    <div class="sechead mt"><h3 class="h3">Head-to-head</h3><button type="button" class="pdfbtn" data-pdf="h2h"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5v8.2m0 0L4.8 6.5M8 9.7l3.2-3.2M2.5 11v2.5h11V11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Download head-to-head (PDF)</button></div>
     <p class="sub">Pick two blocks, or a block and the district, to compare them on every subject in every grade.</p>
     <div class="panel">
       <div class="toolbar">
@@ -264,7 +315,7 @@ footer{color:var(--muted);font-size:12px;padding-block:24px 36px}
   </section>
 
   <section aria-labelledby="lh">
-    <h2 id="lh">Band lens: one band across all blocks</h2>
+    <div class="sechead"><h2 id="lh">Band lens: one band across all blocks</h2><button type="button" class="pdfbtn" data-pdf="heat"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5v8.2m0 0L4.8 6.5M8 9.7l3.2-3.2M2.5 11v2.5h11V11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span id="pdf-heat-lab">Download PDF</span></button></div>
     <p class="sub">Pick a band to see how many of each block's students sit in it, for all 26 subject-grade combinations. Darker cells mean a larger share.</p>
     <div class="lens">
       <div class="toolbar">Band
@@ -281,6 +332,8 @@ footer{color:var(--muted);font-size:12px;padding-block:24px 36px}
 
   <footer>Source: SANKALP Program – Monthly tracking of Learning Levels of Students, Sundargarh, Grade 1–Grade 8 (export 2026-10-06), Sheet1 pivot tables. Percentages use students assessed in each grade as the base; every subject's three bands add up exactly to that base. Pooled figures ("All") add up students across the selected subject assessments, so one student counts once per subject. Grades 1–3 are tracked in Literacy and Numeracy; Grades 4–8 in Odia, English, Mathematics and Science.</footer>
 </main>
+
+<div class="pdftoast" id="pdftoast" role="status" aria-live="polite" hidden></div>
 
 <script>
 const D = {"blocks":["balisankara_210501","bargaon_210502","bisra_210503","bonai_210504","gurundia_210505","hemgiri_210506","koira_210507","kuarmunda_210508","kutra_210509","lahunipara_210510","lathikata_210511","lephripara_210512","nuagaon_210513","rajgangpur_210514","subdega_210515","sundargarh_210516","tangarpali_210517"],"assessed":{"1":[613,471,1051,283,412,270,1005,843,148,1095,496,590,580,927,234,545,361],"2":[378,323,708,190,305,173,798,491,97,819,312,459,346,490,165,309,238],"3":[596,580,1159,294,378,338,1027,967,188,1176,551,521,608,908,332,544,453],"4":[593,652,1515,314,510,373,1087,1128,197,1327,626,592,660,1033,351,650,500],"5":[706,587,1733,375,542,366,1149,1108,224,1311,701,636,707,1139,320,706,423],"6":[593,715,1674,265,446,324,1042,1048,170,992,335,407,561,707,242,800,443],"7":[721,776,1727,338,469,391,990,1065,201,1141,382,500,606,838,293,836,480],"8":[700,717,2008,303,522,349,1074,1176,212,1100,455,434,735,1001,378,1027,487]},"data":{"1":{"Literacy":{"phal":[193,87,235,105,102,90,206,296,47,175,94,152,140,320,77,153,118],"kadh":[162,192,456,83,111,82,375,199,42,485,192,224,210,270,60,147,95],"phul":[258,192,360,95,199,98,424,348,59,435,210,214,230,337,97,245,148]},"Numeracy":{"phal":[186,91,256,108,107,93,231,295,40,167,108,155,141,317,75,166,121],"phul":[259,187,375,91,193,92,438,347,66,472,205,226,241,348,103,243,148],"kadh":[168,193,420,84,112,85,336,201,42,456,183,209,198,262,56,136,92]}},"2":{"Literacy":{"phal":[113,91,149,67,90,57,171,163,29,139,78,124,71,148,54,82,76],"phul":[168,123,247,69,145,63,326,212,32,337,125,167,162,196,76,155,107],"kadh":[97,109,312,54,70,53,301,116,36,343,109,168,113,146,35,72,55]},"Numeracy":{"phal":[114,81,141,67,80,59,165,167,29,126,80,124,86,141,52,84,73],"phul":[164,124,259,72,155,60,337,213,33,341,129,175,146,210,75,152,104],"kadh":[100,118,308,51,70,54,296,111,35,352,103,160,114,139,38,73,61]}},"3":{"Literacy":{"phal":[202,147,236,103,104,116,198,299,60,224,113,179,165,294,112,178,170],"phul":[256,241,440,109,190,133,432,438,80,471,236,182,238,386,125,232,153],"kadh":[138,192,483,82,84,89,397,230,48,481,202,160,205,228,95,134,130]},"Numeracy":{"phal":[186,131,248,97,102,120,203,288,56,217,114,170,146,300,115,179,170],"phul":[263,253,436,118,183,129,439,462,82,454,243,191,256,380,119,223,158],"kadh":[147,196,475,79,93,89,385,217,50,505,194,160,206,228,98,142,125]}},"4":{"Odia":{"phal":[170,182,363,109,142,139,257,373,48,269,161,193,194,316,134,196,186],"phul":[279,251,650,110,262,170,428,445,88,518,258,231,245,410,135,276,197],"kadh":[144,219,502,95,106,64,402,310,61,540,207,168,221,307,82,178,117]},"English":{"phal":[137,115,326,88,100,119,207,273,34,190,127,156,156,234,97,150,135],"phul":[247,243,594,110,264,164,427,484,77,466,242,228,245,399,138,271,176],"kadh":[209,294,595,116,146,90,453,371,86,671,257,208,259,400,116,229,189]},"Mathematics":{"phal":[149,140,345,98,127,133,252,293,43,225,156,177,184,282,119,173,161],"phul":[286,269,639,110,271,170,460,481,95,528,252,240,246,428,152,285,211],"kadh":[158,243,531,106,112,70,375,354,59,574,218,175,230,323,80,192,128]},"Science":{"phal":[159,141,327,116,131,120,259,334,45,233,154,171,175,281,117,181,162],"phul":[295,289,651,109,262,175,458,515,93,529,262,251,254,431,154,291,217],"kadh":[139,222,537,89,117,78,370,279,59,565,210,170,231,321,80,178,121]}},"5":{"Odia":{"phal":[256,189,486,143,164,139,289,332,70,327,232,216,249,386,125,261,156],"phul":[303,213,715,143,273,141,482,506,83,524,265,251,270,468,124,277,168],"kadh":[147,185,532,89,105,86,378,270,71,460,204,169,188,285,71,168,99]},"English":{"phal":[167,101,400,112,116,95,231,275,55,204,187,172,180,288,118,208,115],"phul":[336,246,709,141,279,162,443,474,79,513,271,250,308,434,106,282,159],"kadh":[203,240,624,122,147,109,475,359,90,594,243,214,219,417,96,216,149]},"Mathematics":{"phal":[211,149,406,106,137,111,263,299,67,259,216,198,208,326,125,237,141],"phul":[340,255,697,168,286,165,445,524,83,551,281,260,302,500,126,277,180],"kadh":[155,183,630,101,119,90,441,285,74,501,204,178,197,313,69,192,102]},"Science":{"phal":[203,146,431,125,145,104,281,330,68,252,196,200,225,311,126,238,145],"phul":[333,251,754,154,286,178,472,525,86,545,308,263,302,500,126,306,184],"kadh":[170,190,548,96,111,84,396,253,70,514,197,173,180,328,68,162,94]}},"6":{"Odia":{"phal":[165,233,435,79,122,107,215,238,33,248,83,139,137,221,69,290,120],"phul":[255,274,753,102,225,159,343,446,67,360,133,167,241,255,102,347,195],"kadh":[173,208,486,84,99,58,484,364,70,384,119,101,183,231,71,163,128]},"English":{"phal":[109,173,384,39,106,76,159,178,30,172,71,86,107,166,49,188,92],"phul":[230,249,685,104,233,156,363,417,57,323,126,168,256,272,75,397,165],"kadh":[254,293,605,122,107,92,520,453,83,497,138,153,198,269,118,215,186]},"Mathematics":{"phal":[134,176,413,50,116,97,182,188,37,217,79,118,135,187,52,258,98],"phul":[262,291,706,97,233,141,324,463,58,352,127,177,232,274,102,347,159],"kadh":[197,248,555,118,97,86,536,397,75,423,129,112,194,246,88,195,186]},"Science":{"phal":[124,234,375,56,112,75,215,210,39,194,75,91,171,167,65,221,130],"phul":[260,272,753,111,236,157,341,463,65,382,140,201,212,278,108,352,179],"kadh":[209,209,546,98,98,92,486,375,66,416,120,115,178,262,69,227,134]}},"7":{"Odia":{"phal":[206,314,495,104,132,115,222,243,39,242,84,170,168,263,95,291,182],"phul":[352,246,756,129,223,216,350,487,73,424,176,220,229,298,116,358,182],"kadh":[163,216,476,105,114,60,418,335,89,475,122,110,209,277,82,187,116]},"English":{"phal":[102,192,403,65,111,91,194,221,25,183,73,137,122,173,91,219,91],"phul":[313,269,724,122,229,182,347,446,62,346,166,173,245,253,78,358,170],"kadh":[306,315,600,151,129,118,449,398,114,612,143,190,239,412,124,259,219]},"Mathematics":{"phal":[153,249,378,76,111,106,207,250,28,182,77,166,146,164,78,225,111],"phul":[321,251,717,114,237,179,370,455,74,439,163,196,246,303,102,358,199],"kadh":[247,276,632,148,121,106,413,360,99,520,142,138,214,371,113,253,170]},"Science":{"phal":[140,259,435,91,111,97,222,214,39,208,82,130,136,195,98,235,118],"phul":[340,258,756,122,238,196,364,485,64,452,165,222,240,327,103,367,217],"kadh":[241,259,536,125,120,98,404,366,98,481,135,148,230,316,92,234,145]}},"8":{"Odia":{"phal":[191,298,626,75,158,136,241,219,52,326,116,156,201,315,99,379,239],"phul":[356,209,890,125,269,165,393,614,97,401,205,173,334,433,182,476,152],"kadh":[153,210,492,103,95,48,440,343,63,373,134,105,200,253,97,172,96]},"English":{"phal":[96,202,588,63,140,57,185,203,30,227,103,100,161,183,84,318,149],"phul":[348,258,837,104,273,187,387,542,57,352,174,171,299,486,133,480,178],"kadh":[256,257,583,136,109,105,502,431,125,521,178,163,275,332,161,229,160]},"Mathematics":{"phal":[150,248,528,55,138,84,213,174,43,244,97,166,150,207,99,278,105],"phul":[309,217,879,117,271,176,396,550,69,412,192,159,335,432,139,454,173],"kadh":[241,252,601,131,113,89,465,452,100,444,166,109,250,362,140,295,209]},"Science":{"phal":[129,278,528,65,130,105,217,169,33,254,99,104,200,191,95,321,147],"phul":[343,219,933,119,288,162,399,611,77,447,193,180,323,499,151,505,174],"kadh":[228,220,547,119,104,82,458,396,102,399,163,150,212,311,132,201,166]}}}};
@@ -356,13 +409,12 @@ function renderKPIs(){
 }
 
 /* Overview */
-function renderOverview(){
-  $('overview').innerHTML = GRADES.map(g=>{
+function ovGradeHTML(g){
     const n=assessedTot(g);
     return `<div class="ovg"><div class="g">Grade ${g}<small class="num">${fmt(n)} assessed</small></div><div class="ovrows">` +
       subjects(g).map(s=>`<button type="button" class="ovr" data-g="${g}" data-s="${s}" aria-label="Open Grade ${g} ${s}"><span class="s">${s}</span>${bar(BANDS.map(b=>tot(g,s,b.k)),n)}</button>`).join('') + `</div></div>`;
-  }).join('');
 }
+function renderOverview(){ $('overview').innerHTML = GRADES.map(ovGradeHTML).join(''); }
 
 /* Grade tabs + cards */
 let curG = GRADES[0], sortK = 'phal';
@@ -370,8 +422,12 @@ $('tabs').innerHTML = GRADES.map(g=>`<button type="button" role="tab" class="tab
 function renderCards(){
   $('tabs').querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected', String(+t.dataset.g===curG)));
   document.querySelectorAll('#sort button').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.k===sortK)));
-  const g=curG, n=assessedTot(g), A=D.assessed[g];
-  $('cards').innerHTML = subjects(g).map(s=>{
+  $('cards').innerHTML = subjects(curG).map(s=>cardHTML(curG,s)).join('');
+  $('pdf-cards-lab').textContent = `Download Grade ${curG} (PDF)`;
+  fit($('cards'));
+}
+function cardHTML(g,s){
+    const n=assessedTot(g), A=D.assessed[g];
     const S=D.data[g][s], totals=BANDS.map(b=>tot(g,s,b.k));
     let idx=D.blocks.map((_,i)=>i);
     if(sortK==='name') idx.sort((a,b)=>D.blocks[a].localeCompare(D.blocks[b]));
@@ -386,8 +442,6 @@ function renderCards(){
       <div class="blocks"><div class="hd"><span>Block · assessed</span><span>${bandHd()}</span></div>${rows}
       <div class="brow dist"><div class="bn2">District</div>${bar(totals,n,'sm')}</div></div>
     </article>`;
-  }).join('');
-  fit($('cards'));
 }
 $('tabs').addEventListener('click',e=>{const t=e.target.closest('.tab'); if(!t) return; curG=+t.dataset.g; renderCards();});
 $('tabs').addEventListener('keydown',e=>{ if(!['ArrowLeft','ArrowRight'].includes(e.key)) return; const i=GRADES.indexOf(curG)+(e.key==='ArrowRight'?1:-1); if(i<0||i>=GRADES.length) return; curG=GRADES[i]; renderCards(); $('tab-'+curG).focus(); });
@@ -468,10 +522,10 @@ $('hh-a').addEventListener('change',renderH2H); $('hh-b').addEventListener('chan
 /* Band lens heatmap */
 let lensK='phal';
 const HEAT={kadh:'214,40,40',phul:'230,190,0',phal:'23,138,62'};
-function cellStyle(v,lo,hi){
+function cellStyle(v,lo,hi,k=lensK){
   const t=Math.max(0,Math.min(1,(v-lo)/(hi-lo||1)));
-  const fg = t>0.55 ? (lensK==='phul' ? '#00316B' : '#FFFFFF') : 'var(--fg)';
-  return `background:rgba(${HEAT[lensK]},${(0.06+t*0.88).toFixed(3)});color:${fg}`;
+  const fg = t>0.55 ? (k==='phul' ? '#00316B' : '#FFFFFF') : 'var(--fg)';
+  return `background:rgba(${HEAT[k]},${(0.06+t*0.88).toFixed(3)});color:${fg}`;
 }
 function cellText(v,c){
   if(unit==='pct') return Math.round(v);
@@ -480,18 +534,24 @@ function cellText(v,c){
 }
 function renderHeat(){
   document.querySelectorAll('#bandpick button').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.k===lensK)));
+  const p=heatParts(lensK);
+  $('scale').innerHTML = p.scale;
+  $('heat').innerHTML = p.table;
+  $('heat').className = 'heat u-'+unit;
+  $('pdf-heat-lab').textContent = `Download ${BN[lensK].name} lens (PDF)`;
+}
+function heatParts(lensK){
   const vals = D.blocks.map((_,i)=>PAIRS.map(c=>pct(D.data[c.g][c.s][lensK][i], D.assessed[c.g][i])));
   const dist = PAIRS.map(c=>pct(tot(c.g,c.s,lensK), assessedTot(c.g)));
   const all=[...vals.flat(),...dist];
   const top=Math.ceil(Math.max(...all)/5)*5, low=Math.floor(Math.min(...all)/5)*5;
   const B=BN[lensK], bs=HEAT[lensK];
   const what = unit==='pct' ? 'Share (%)' : unit==='n' ? 'Number of students' : 'Share and number of students';
-  $('scale').innerHTML = `${what} in ${SYM[B.k]} ${B.name}. Shading by share: <span class="ramp" style="background:linear-gradient(90deg,rgba(${bs},.06),rgba(${bs},.94))"></span><span class="num">${low}% → ${top}%</span>`;
+  const scale = `${what} in ${SYM[B.k]} ${B.name}. Shading by share: <span class="ramp" style="background:linear-gradient(90deg,rgba(${bs},.06),rgba(${bs},.94))"></span><span class="num">${low}% → ${top}%</span>`;
   let h = '<thead><tr><th></th>' + GRADES.map(g=>`<th colspan="${subjects(g).length}">Grade ${g}</th>`).join('') + '</tr><tr><th style="text-align:left">Block</th>' + PAIRS.map(c=>`<th title="${c.s}">${SUBJ[c.s].ab}</th>`).join('') + '</tr></thead><tbody>';
-  h += D.blocks.map((bk,i)=>{ const bn=blockName(bk); return `<tr><th title="${bn.c}">${bn.n}</th>` + vals[i].map((v,j)=>{ const c=D.data[PAIRS[j].g][PAIRS[j].s][lensK][i]; return `<td class="num" style="${cellStyle(v,low,top)}" title="${bn.n} · Grade ${PAIRS[j].g} ${PAIRS[j].s} · ${B.name} ${p1(v)} (${fmt(c)} of ${fmt(D.assessed[PAIRS[j].g][i])})">${cellText(v,c)}</td>`; }).join('') + '</tr>'; }).join('');
-  h += `<tr class="dist"><th>District</th>` + dist.map((v,j)=>{ const c=tot(PAIRS[j].g,PAIRS[j].s,lensK); return `<td class="num" style="${cellStyle(v,low,top)}" title="District · Grade ${PAIRS[j].g} ${PAIRS[j].s} · ${B.name} ${p1(v)} (${fmt(c)})">${cellText(v,c)}</td>`; }).join('') + '</tr></tbody>';
-  $('heat').innerHTML = h;
-  $('heat').className = 'heat u-'+unit;
+  h += D.blocks.map((bk,i)=>{ const bn=blockName(bk); return `<tr><th title="${bn.c}">${bn.n}</th>` + vals[i].map((v,j)=>{ const c=D.data[PAIRS[j].g][PAIRS[j].s][lensK][i]; return `<td class="num" style="${cellStyle(v,low,top,lensK)}" title="${bn.n} · Grade ${PAIRS[j].g} ${PAIRS[j].s} · ${B.name} ${p1(v)} (${fmt(c)} of ${fmt(D.assessed[PAIRS[j].g][i])})">${cellText(v,c)}</td>`; }).join('') + '</tr>'; }).join('');
+  h += `<tr class="dist"><th>District</th>` + dist.map((v,j)=>{ const c=tot(PAIRS[j].g,PAIRS[j].s,lensK); return `<td class="num" style="${cellStyle(v,low,top,lensK)}" title="District · Grade ${PAIRS[j].g} ${PAIRS[j].s} · ${B.name} ${p1(v)} (${fmt(c)})">${cellText(v,c)}</td>`; }).join('') + '</tr></tbody>';
+  return {scale, table:h};
 }
 $('bandpick').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; lensK=b.dataset.k; renderHeat();});
 
@@ -506,6 +566,178 @@ $('unitpick').addEventListener('click',e=>{const b=e.target.closest('button'); i
 renderAll();
 let rt; addEventListener('resize',()=>{clearTimeout(rt); rt=setTimeout(()=>fit(),150);});
 if(document.fonts&&document.fonts.ready) document.fonts.ready.then(()=>fit());
+
+/* ---------- PDF reports ---------- */
+const PDF_LIBS=[
+  'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'
+];
+let libsP=null;
+function loadLibs(){
+  if(libsP) return libsP;
+  libsP = Promise.all(PDF_LIBS.map(src=>new Promise((res,rej)=>{
+    const sc=document.createElement('script'); sc.src=src; sc.onload=res;
+    sc.onerror=()=>rej(new Error('the PDF tools could not be loaded. Check your connection and try again.'));
+    document.head.appendChild(sc);
+  })));
+  libsP.catch(()=>{libsP=null;});
+  return libsP;
+}
+const toastEl=$('pdftoast'); let toastT;
+function say(msg,hold){ clearTimeout(toastT); toastEl.textContent=msg; toastEl.hidden=false; if(!hold) toastT=setTimeout(()=>{toastEl.hidden=true;},5000); }
+
+const PORT_W=1000, LAND_W=1180;
+const unitLabel=()=>({pct:'percentages',n:'numbers of students',both:'percentages and numbers of students'})[unit];
+const rankBy={phal:'share in Phala, highest first',kadh:'share in Kadha, highest first',name:'block name'};
+const sortBy={phal:'share in Phala, highest first',kadh:'share in Kadha, highest first',n:'students assessed',name:'block name'};
+const today=()=>new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});
+const slug=t=>t.replace(/[^A-Za-z0-9]+/g,'_').replace(/^_|_$/g,'');
+const selText=el=>el.options[el.selectedIndex].text;
+
+function addBlk(st,html,o={}){
+  const el=document.createElement('div');
+  el.className='pdfblk'; el.style.width=(o.w||PORT_W)+'px'; el.innerHTML=html;
+  el.querySelectorAll('[id]').forEach(n=>n.removeAttribute('id'));
+  st.appendChild(el);
+  return {el, orient:o.orient||'p', keep:!!o.keep};
+}
+const headHTML=(title,sub)=>`<div class="pdfhead"><div class="ph-row"><div><div class="ph-eye">SANKALP Programme · Sundargarh</div><h1>${title}</h1><p>${sub}</p></div><div class="ph-meta">Generated ${today()}<br>Data: export of 6 October 2026<br>Values as ${unitLabel()}</div></div><div class="legend">${$('legend').innerHTML}</div></div>`;
+const secHTML=(t,sub)=>`<h2 class="pdfh2">${t}</h2>${sub?`<p class="sub">${sub}</p>`:''}`;
+
+function bOverview(st,L){
+  L.push(addBlk(st,secHTML('Every subject, every grade','District-wide split of students across Phala, Phula and Kadha.'),{keep:true}));
+  GRADES.forEach(g=>L.push(addBlk(st,`<div class="pdfov">${ovGradeHTML(g)}</div>`)));
+}
+function bCards(st,L,g){
+  L.push(addBlk(st,secHTML(`Grade ${g}: subject cards`,`${fmt(assessedTot(g))} students assessed across 17 blocks. Blocks sorted by ${sortBy[sortK]}.`),{keep:true}));
+  const cs=subjects(g).map(s=>cardHTML(g,s));
+  for(let i=0;i<cs.length;i+=2) L.push(addBlk(st,`<div class="cards">${cs.slice(i,i+2).join('')}</div>`));
+}
+function bRanking(st,L){
+  L.push(addBlk(st,secHTML('Block-wise comparison',`${selText($('rk-grade'))}, ${selText($('rk-subj')).toLowerCase()}. Ranked by ${rankBy[rkSort]}.`)+
+    `<div class="panel">${document.querySelector('.rkhead').outerHTML}${$('ranking').innerHTML}</div>`));
+}
+function bH2H(st,L){
+  const na=selText($('hh-a')), nb=selText($('hh-b'));
+  L.push(addBlk(st,secHTML(`Head-to-head: ${na} compared with ${nb}`,'Every subject in every grade.'),{keep:true}));
+  const groups=[]; let cur=null;
+  [...$('h2h').children].forEach(r=>{
+    if(!cur || r.classList.contains('newg')){ cur=[]; groups.push(cur); }
+    cur.push(r.outerHTML);
+  });
+  groups.forEach(gr=>L.push(addBlk(st,`<div class="h2h">${gr.join('')}</div>`)));
+}
+function bHeat(st,L,k,standalone){
+  const p=heatParts(k), B=BN[k];
+  const extra = standalone ? ` SANKALP Programme, Sundargarh. Data: export of 6 October 2026. Generated ${today()}.` : '';
+  const d=addBlk(st,secHTML(`Band lens: ${B.name}`,`Share of each block's students in ${B.name} for all ${PAIRS.length} subject-grade combinations. Darker cells mean a larger share.${extra}`)+
+    `<div class="lens"><div class="scale">${p.scale}</div><table class="heat u-${unit}">${p.table}</table></div>`,{orient:'l',w:LAND_W});
+  d.el.style.width='max-content'; d.el.style.minWidth=LAND_W+'px';
+  L.push(d);
+}
+
+const REPORTS={
+  full:()=>({title:'Learning levels, Grade 1 to Grade 8',sub:'Full district report: every subject in every grade, subject cards with all 17 blocks, block ranking, head-to-head comparison and all three band lenses.',file:'SANKALP_Sundargarh_full_report.pdf',
+    build(st,L){ bOverview(st,L); GRADES.forEach(g=>bCards(st,L,g)); bRanking(st,L); bH2H(st,L); BANDS.forEach(b=>bHeat(st,L,b.k)); }}),
+  overview:()=>({title:'Every subject, every grade',sub:'District-wide split across the three learning bands.',file:'SANKALP_Sundargarh_overview.pdf',build(st,L){ bOverview(st,L); }}),
+  cards:()=>({title:`Grade ${curG} subject cards`,sub:`Each subject in Grade ${curG}: the three bands district-wide, then every block.`,file:`SANKALP_Sundargarh_Grade${curG}_subject_cards.pdf`,build(st,L){ bCards(st,L,curG); }}),
+  ranking:()=>({title:'Block-wise ranking',sub:'All 17 blocks ranked side by side.',file:`SANKALP_Sundargarh_block_ranking_${slug(selText($('rk-grade')))}_${slug(selText($('rk-subj')))}.pdf`,build(st,L){ bRanking(st,L); }}),
+  h2h:()=>({title:`${selText($('hh-a'))} vs ${selText($('hh-b'))}`,sub:'Head-to-head comparison on every subject in every grade.',file:`SANKALP_Sundargarh_${slug(selText($('hh-a')))}_vs_${slug(selText($('hh-b')))}.pdf`,build(st,L){ bH2H(st,L); }}),
+  heat:()=>({title:`Band lens: ${BN[lensK].name}`,sub:'One band across all blocks and all subject-grade combinations.',file:`SANKALP_Sundargarh_band_lens_${BN[lensK].name}.pdf`,orient:'l',noHead:true,build(st,L){ bHeat(st,L,lensK,true); }})
+};
+
+async function deliver(filename,blob,fallback){
+  if(window.claude && typeof window.claude.use==='function'){
+    const dl=await window.claude.use('downloads');
+    if(!dl){ say('Downloads are not available in this view.'); return; }
+    try{ await dl.save({filename,data:blob}); say('PDF saved.'); }
+    catch(e){
+      const c=e&&e.code;
+      say(c==='declined'?'Download cancelled.':c==='rate_limited'?'A download prompt is already open.':'The PDF could not be saved in this view.');
+    }
+  } else { fallback(); say('PDF downloaded.'); }
+}
+
+let pdfBusy=false;
+async function makePDF(kind){
+  if(pdfBusy) return; pdfBusy=true;
+  const btns=[...document.querySelectorAll('[data-pdf]')]; btns.forEach(b=>b.disabled=true);
+  say('Preparing PDF…',true);
+  let st=null;
+  try{
+    await loadLibs();
+    if(document.fonts&&document.fonts.ready) await document.fonts.ready;
+    const R=REPORTS[kind]();
+    st=document.createElement('div'); st.className='pdfstage'; st.setAttribute('aria-hidden','true'); document.body.appendChild(st);
+    const L=[];
+    const ho=R.orient||'p';
+    if(!R.noHead) L.push(addBlk(st,headHTML(R.title,R.sub),{orient:ho,w:ho==='l'?LAND_W:PORT_W}));
+    R.build(st,L);
+    fit(st);
+    /* swap inline SVG symbols for cached image copies: html2canvas draws repeated <img> sources far faster than repeated inline SVGs */
+    const svgSrc=new Map();
+    st.querySelectorAll('.sym svg').forEach(sv=>{
+      const key=sv.outerHTML;
+      if(!svgSrc.has(key)){ const c=sv.cloneNode(true); c.setAttribute('xmlns','http://www.w3.org/2000/svg'); c.setAttribute('width','24'); c.setAttribute('height','24'); svgSrc.set(key,'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(c.outerHTML)); }
+      const im=new Image(); im.src=svgSrc.get(key); im.alt=''; im.className='symimg'; sv.replaceWith(im);
+    });
+    await Promise.all([...new Set(svgSrc.values())].map(u=>{ const im=new Image(); im.src=u; return im.decode().catch(()=>{}); }));
+
+    const {jsPDF}=window.jspdf;
+    const M=12, FOOT=8;
+    let doc=null, y=0, curO=null;
+    const size=()=>({W:doc.internal.pageSize.getWidth(),H:doc.internal.pageSize.getHeight()});
+    const newPage=o=>{ if(!doc) doc=new jsPDF({orientation:o,unit:'mm',format:'a4',compress:true}); else doc.addPage('a4',o); curO=o; y=M; };
+    for(let i=0;i<L.length;i++){
+      say(`Preparing PDF: part ${i+1} of ${L.length}`,true);
+      const b=L[i], el=b.el;
+      if(!doc||b.orient!==curO) newPage(b.orient);
+      let {W,H}=size(); const cw=W-2*M, bottom=H-M-FOOT, avail=bottom-M;
+      const cv=await html2canvas(el,{scale:1.6,backgroundColor:'#FFFFFF',logging:false,useCORS:true,scrollX:0,scrollY:0,ignoreElements:n=>(n.classList&&n.classList.contains('pdfblk')&&n!==el)||n.tagName==='MAIN'||n.tagName==='HEADER'||(n.classList&&(n.classList.contains('unitbar')||n.classList.contains('pdftoast'))),windowWidth:Math.max(1280,el.offsetWidth+40)});
+      let w=cw, h=cv.height*cw/cv.width;
+      let need=h;
+      const nx=L[i+1];
+      if(b.keep && nx && nx.orient===curO){ const nh=nx.el.offsetHeight*cw/nx.el.offsetWidth; need += nh<=avail-h ? nh : 40; }
+      const shrink = b.orient==='l' && y>M+0.5 && h>bottom-y && h/(bottom-y)<=1.15;
+      if(shrink){ const w2=w*(bottom-y)/h; doc.addImage(cv.toDataURL('image/jpeg',0.8),'JPEG',M+(cw-w2)/2,y,w2,bottom-y,undefined,'FAST'); y=bottom; continue; }
+      if(y+need>bottom && y>M+0.5) newPage(curO);
+      if(h<=bottom-y){
+        doc.addImage(cv.toDataURL('image/jpeg',0.8),'JPEG',M,y,w,h,undefined,'FAST'); y+=h+3;
+      } else if(h/avail<=1.5){
+        const w2=w*avail/h;
+        doc.addImage(cv.toDataURL('image/jpeg',0.8),'JPEG',M+(cw-w2)/2,y,w2,avail,undefined,'FAST'); y=bottom;
+      } else {
+        const sliceH=Math.floor(avail*cv.width/cw);
+        for(let off=0; off<cv.height; off+=sliceH){
+          if(off>0) newPage(curO);
+          const hh=Math.min(sliceH,cv.height-off), part=document.createElement('canvas');
+          part.width=cv.width; part.height=hh;
+          const cx=part.getContext('2d'); cx.fillStyle='#FFFFFF'; cx.fillRect(0,0,part.width,hh); cx.drawImage(cv,0,-off);
+          const ph=hh*cw/cv.width;
+          doc.addImage(part.toDataURL('image/jpeg',0.8),'JPEG',M,y,cw,ph,undefined,'FAST'); y+=ph+3;
+        }
+      }
+    }
+    const n=doc.getNumberOfPages();
+    for(let p=1;p<=n;p++){
+      doc.setPage(p); const {W,H}=size();
+      doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(85,103,128);
+      doc.text(`SANKALP Sundargarh learning levels: ${R.title}`,M,H-7);
+      doc.text(`Page ${p} of ${n}`,W-M,H-7,{align:'right'});
+    }
+    doc.setProperties({title:`SANKALP Sundargarh: ${R.title}`,subject:'Learning levels, Grade 1 to Grade 8',creator:'SANKALP Sundargarh learning levels'});
+    await deliver(R.file, doc.output('blob'), ()=>doc.save(R.file));
+  }catch(e){
+    console.error(e);
+    say('Could not build the PDF: '+(e&&e.message?e.message:'unknown error'));
+  }finally{
+    if(st) st.remove();
+    btns.forEach(b=>b.disabled=false); pdfBusy=false;
+  }
+}
+document.addEventListener('click',e=>{ const b=e.target.closest('[data-pdf]'); if(b) makePDF(b.dataset.pdf); });
+/* inside claude.ai, hide the buttons if this view can't save files */
+setTimeout(()=>{ if(window.claude&&typeof window.claude.use==='function') window.claude.use('downloads').then(dl=>{ if(!dl) document.querySelectorAll('[data-pdf]').forEach(b=>b.hidden=true); }).catch(()=>{}); },0);
 </script>
 
 </body></html>
